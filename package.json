@@ -1,0 +1,23 @@
+{
+  "name": "@song940/openai",
+  "version": "0.0.3",
+  "main": "openai.js",
+  "module": "openai.js",
+  "scripts": {
+    "start": "python3 -m http.server"
+  },
+  "author": "Lsong <hi@lsong.org>",
+  "license": "MIT",
+  "description": "OpenAI JS SDK",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/song940/chatgpt-demo.git"
+  },
+  "keywords": [
+    "openai"
+  ],
+  "bugs": {
+    "url": "https://github.com/song940/chatgpt-demo/issues"
+  },
+  "homepage": "http://lsong.org/chatgpt-demo"
+}

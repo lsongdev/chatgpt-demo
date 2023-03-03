@@ -1,0 +1,78 @@
+@import url(https://lsong.org/css/stylesheet.css);
+@import url(https://lsong.org/stylesheets/util.css);
+@import url(https://lsong.org/stylesheets/flex.css);
+@import url(https://lsong.org/stylesheets/form.css);
+@import url(https://lsong.org/stylesheets/button.css);
+
+.select {
+  --border-radius: 4px;
+  padding: var(--input-padding);
+}
+
+#app {
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+textarea {
+  min-width: 100%;
+  min-height: 2em;
+  field-sizing: content;
+}
+
+.messages {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: system-ui, sans-serif;
+}
+
+.messages > li {
+  margin: 5px 0;
+  padding: 10px;
+  overflow: hidden;
+  position: relative;
+  border-radius: 10px;
+}
+
+.preview span {
+  float: left;
+  color: #fff;
+  padding: 2px;
+  margin-right: 3px;
+  background-color: #f70;
+  border-radius: 3px;
+  font-size: 0.7em;
+  text-transform: uppercase;
+}
+
+.preview pre {
+  width: 100%;
+  overflow: auto;
+}
+
+.copyright {
+  color: #666;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+.message-role-system {
+  background-color: bisque;
+}
+
+.message-role-user {
+  text-align: right;
+  background-color: aliceblue;
+}
+
+.message-role-assistant {
+  background-color: #eee;
+}
+
+#models {
+  width: 30%;
+  min-width: 100px;
+  max-width: 300px;
+}
