@@ -1,0 +1,12 @@
+{
+  "name": "my-app",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npx http-server"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "http-server": "^0.12.3"
+  }
+}

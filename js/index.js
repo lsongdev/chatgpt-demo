@@ -44,6 +44,7 @@ const roles = {
   },
 }
 
+
 const Message = ({ message }) => {
   const previewRef = useRef();
   useEffect(() => {
@@ -55,9 +56,12 @@ const Message = ({ message }) => {
   ]);
 };
 
+// parse location.search and get key: s
+const q = new URLSearchParams(location.search).get('q');
+
 const App = () => {
   const [role, setRole] = useState('assistant');
-  const [prompts, setPrompts] = useState('');
+  const [prompts, setPrompts] = useState(q);
   const [messages, setMessages] = useState([]);
   useEffect(() => {
     const system = {
@@ -74,6 +78,7 @@ const App = () => {
       content: prompts
     });
     setPrompts('');
+    setMessages([...messages]);
     const response = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       messages,
@@ -85,6 +90,13 @@ const App = () => {
       body: message.content,
     });
   };
+  // trigger handleSubmit if prompts is not empty
+  useEffect(() => {
+    if (prompts) {
+      handleSubmit({ preventDefault: () => {} });
+    }
+  }, [prompts]);
+
   return [
     h('h2', null, "ChatGPT"),
     h('ul', { className: 'messages' }, [
