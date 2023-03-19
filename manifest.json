@@ -1,12 +1,15 @@
 {
   "name": "Light Speed",
   "short_name": "⚡️",
-  "description": "Open AI ChatGPT Demo",
+  "description": "ChatGPT Demo",
   "id": "?id=chatgpt",
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#000",
   "background_color": "#efefef",
+  "display_override": [
+    "window-controls-overlay"
+  ],
   "icons": [
     {
       "src": "icon-x128.png",

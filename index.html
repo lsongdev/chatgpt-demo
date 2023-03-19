@@ -8,7 +8,7 @@
   <meta name="description" content="homepage, blog, music and etc.">
   <meta name="author" content="Lsong">
   <meta name="theme-color" content="#ffffff">
-  <meta name="color-scheme" content="dark light">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="ChatGPT Demo">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -18,23 +18,24 @@
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="apple-touch-icon" sizes="128x128" type="image/png" href="icon-x128.png">
   <link rel="apple-touch-icon" sizes="512x512" type="image/png" href="icon-x512.png">
-  <link rel="stylesheet" href="css/index.css">
-  <script type="module" src="js/index.js"></script>
+  <link rel="search" type="application/opensearchdescription+xml" href="search.xml" title="ChatGPT Demo">
+  <link rel="stylesheet" href="index.css">
+  <script type="module" src="index.js"></script>
 </head>
 
 <body>
   <div class="container">
     <header class="header">
-      <h1>
-        <img src="icon.svg" alt="logo" class="logo">
-        ChatGPT Demo
-      </h1>
+      <a class="heading" href="/">
+        <img src="icon.svg" alt="" class="logo">
+        <h1>ChatGPT <b>Demo</b></h1>
+      </a>
       <nav class="nav nav-bar">
         <a href="//lsong.org">home</a>
         <a href="//lsong.org/posts">blog</a>
         <a href="//lsong.org/books">books</a>
         <a href="//lsong.org/music">music</a>
-        <a href="//lsong.org/apps.html">more</a>
+        <a href="//lsong.org/start">apps</a>
         <x-inbox></x-inbox>
       </nav>
       <hr />
@@ -47,29 +48,52 @@
           Hi, I'm Liu Song, a full-stack developer with a passion for open-source software.
           I have experience in web and mobile development, as well as a background in embedded systems and network
           protocols.
-          I enjoy writing tech <a href="//lsong.org/posts">blogs</a> and developing <a href="//lsong.org/apps.html">applications</a> in my spare time.
+          I enjoy writing tech <a href="//lsong.org/posts">blogs</a> and developing <a
+            href="//go.lsong.org/#apps">applications</a> in my spare time.
           Proficient in Node.js, Golang, and server operations, I'm always eager to learn more and contribute to the
           community.
-          Check out my GitHub <a href="github.com/song940">@song940</a> for some of my projects and feel free to connect
+          Check out my GitHub <a href="https://github.com/lsongdev">@lsongdev</a> for some of my projects and feel free
+          to
+          connect
           with me to discuss ideas.
           When I'm not coding, I enjoy listening to <a href="//lsong.org/music">music</a> and playing <a
-            href="//lsong.org/game">games</a>.
+            href="//go.lsong.org/#games">games</a>.
         </p>
       </section>
 
-      <section id="app"></section>
-
-      <hr />
-      <section class="subscribe">
-        <h2>Subscribe</h2>
-        <p>Join our occasional newsletter for product launches, availability, job openings, and news:</p>
-        <form action="https://formspree.io/song940@gmail.com" method="post">
-          <input class="input" type="email" id="email" name="email" required placeholder="email address">
-          <button class="button" type="submit">Submit</button>
+      <section id="app">
+        <h2>ChatGPT</h2>
+        <div>
+          <select name="roles" id="roles" class="select input" >
+            <option>Select a role</option>
+          </select>
+        </div>
+        <textarea name="system" id="system" class="input width-full" placeholder="Custom system message"></textarea>
+        <ul id="messages" class="messages"></ul>
+        <form id="form">
+          <div class="input-group width-full">
+            <select name="model" id="models" class="select" selected="openrouter:openai/gpt-3.5-turbo"></select>
+            <input type="text" id="user" autocomplete="off" placeholder="Send a message..." class="input input-block"
+              required>
+            <button type="submit" class="button">Send</button>
+          </div>
         </form>
+        <details id="settings">
+          <summary>Settings</summary>
+          <div class="flex flex-jc-between">
+            <label for="temperature">Temperature:</label>
+            <input type="range" min="0" max="2" step="0.01" value="1" id="temperature" />
+          </div>
+        </details>
       </section>
     </main>
     <footer class="footer">
+      <h2>Subscribe</h2>
+      <p>Join our occasional newsletter for product launches, availability, job openings, and news:</p>
+      <form action="https://formspree.io/song940@gmail.com" method="post" class="input-group width-full">
+        <input class="input" type="email" id="email" name="email" required placeholder="email address">
+        <button class="button" type="submit">Submit</button>
+      </form>
       <hr />
       Liu Song
       <address>

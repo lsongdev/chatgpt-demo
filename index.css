@@ -4,18 +4,31 @@
 @import url(https://lsong.org/stylesheets/form.css);
 @import url(https://lsong.org/stylesheets/button.css);
 
-.container {
-  max-width: 800px;
+#app {
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+textarea {
+  min-width: 100%;
+  min-height: 2em;
+  field-sizing: content;
 }
 
 .messages {
+  margin: 0;
   padding: 0;
   list-style: none;
   font-family: system-ui, sans-serif;
 }
 
-.messages li {
+.messages > li {
   margin: 5px 0;
+  overflow: hidden;
+  border-radius: 10px;
+  padding: 0 15px;
+  position: relative;
 }
 
 .preview span {
@@ -31,11 +44,30 @@
 
 .preview pre {
   width: 100%;
-  overflow: scroll;
+  overflow: auto;
 }
 
 .copyright {
   color: #666;
   margin-top: 10px;
   font-style: italic;
+}
+
+.message-role-system {
+  background-color: bisque;
+}
+
+.message-role-user {
+  text-align: right;
+  background-color: aliceblue;
+}
+
+.message-role-assistant {
+  background-color: #eee;
+}
+
+#models {
+  width: 30%;
+  min-width: 100px;
+  max-width: 300px;
 }

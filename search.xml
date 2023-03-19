@@ -1,0 +1,5 @@
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>ChatGPT Demo</ShortName>
+  <Description>chatgpt.lsong.org</Description>
+  <Url type="text/html" template="https://chatgpt.lsong.org/?q={searchTerms}"/>
+</OpenSearchDescription>
