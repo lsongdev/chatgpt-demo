@@ -1,0 +1,7 @@
+{
+  "name": "chatgpt-demo",
+  "version": "0.0.0",
+  "scripts": {
+    "start": "python3 -m http.server"
+  }
+}

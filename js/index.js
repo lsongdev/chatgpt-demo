@@ -8,14 +8,20 @@ import { h, render, useState, useEffect, useRef } from 'https://lsong.org/script
 
 import 'https://lsong.org/js/application.js';
 
+const DEFAULT_KEY = ('sk-' + 'mFgbWOgjrV62S155UbaNT3BlbkFJLnYe7YMcaDiRYN9XzzLR');
+
 const {
-  apiKey = ('sk-' + 'mFgbWOgjrV62S155UbaNT3BlbkFJLnYe7YMcaDiRYN9XzzLR')
+  q,
+  key = DEFAULT_KEY,
+  role: qrole = 'assistant',
 } = query;
 
 const configuration = new Configuration({
   api: "https://openai.lsong.org",
-  apiKey
+  apiKey: key,
 });
+
+const model = 'gpt-3.5-turbo';
 const openai = new OpenAI(configuration);
 
 const roles = {
@@ -42,7 +48,7 @@ const roles = {
     "welcome_message": "🎬 Hi, I'm <b>ChatGPT movie expert</b>. How can I help you?",
     "prompt_start": "As an advanced movie expert chatbot named ChatGPT, your primary goal is to assist users to the best of your ability. You can answer questions about movies, actors, directors, and more. You can recommend movies to users based on their preferences. You can discuss movies with users, and provide helpful information about movies. In order to effectively assist users, it is important to be detailed and thorough in your responses. Use examples and evidence to support your points and justify your recommendations or solutions. Remember to always prioritize the needs and satisfaction of the user. Your ultimate goal is to provide a helpful and enjoyable experience for the user."
   },
-}
+};
 
 const Message = ({ message }) => {
   const previewRef = useRef();
@@ -55,8 +61,17 @@ const Message = ({ message }) => {
   ]);
 };
 
+export function useEffectDidMount(effect, deps = []) {
+  const isMounted = useRef(false);
+  useEffect(() => {
+    if (isMounted.current) return effect();
+    else isMounted.current = true;
+    return () => isMounted.current = false;
+  }, deps);
+}
+
 const App = () => {
-  const [role, setRole] = useState('assistant');
+  const [role, setRole] = useState(qrole);
   const [prompts, setPrompts] = useState('');
   const [messages, setMessages] = useState([]);
   useEffect(() => {
@@ -64,26 +79,33 @@ const App = () => {
       role: 'system',
       content: roles[role].prompt_start
     };
-    setMessages([system])
+    setMessages([system]);
   }, [role]);
-  const handleSubmit = async e => {
-    e.preventDefault();
-    console.log(prompts);
+  useEffect(() => {
+    q && sendMessage(q);
+  }, []);
+  const sendMessage = async prompts => {
     messages.push({
       role: 'user',
-      content: prompts
+      content: prompts,
     });
-    setPrompts('');
+    setMessages([...messages]);
     const response = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
+      model,
       messages,
     });
+    console.log('response', response);
     const { message } = response.choices[0];
     setMessages([...messages, message]);
-    notify('ChatGPT Demo', {
+    notify(document.title, {
       icon: `icon-x512.png`,
       body: message.content,
     });
+  };
+  const handleSubmit = async e => {
+    e.preventDefault();
+    sendMessage(prompts);
+    setPrompts('');
   };
   return [
     h('h2', null, "ChatGPT"),
@@ -92,7 +114,10 @@ const App = () => {
     ]),
     h('form', { className: "flex", onSubmit: handleSubmit }, [
       h('select', { onChange: e => setRole(e.target.value) }, [
-        Object.entries(roles).map(([name, role]) => h('option', { value: name }, role.name)),
+        Object.entries(roles).map(([k, x]) => h('option', {
+          value: k,
+          selected: role === k ? 'selected' : ''
+        }, x.name)),
       ]),
       h('input', {
         value: prompts,
@@ -102,7 +127,7 @@ const App = () => {
       }),
       h('button', { className: "button button-primary" }, "Send"),
     ]),
-    h('p', { className: 'copyright' }, "Based on OpenAI API (gpt-3.5-turbo).")
+    h('p', { className: 'copyright' }, `Based on OpenAI API (${model}).`)
   ]
 }
 
@@ -111,4 +136,4 @@ ready(() => {
   render(h(App), app);
 });
 
-registerServiceWorker("sw.js");
+registerServiceWorker();
