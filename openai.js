@@ -13,10 +13,20 @@ export class OpenAI {
     this.config = config;
     this.headers = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${config.apiKey}`
+      'Authorization': `Bearer ${config.apiKey}`,
+      // 'OpenAI-Organization': config.organization,
+      // 'OpenAI-Project': config.project,
     };
   }
 
+  async getModels() {
+    const response = await fetch(`${this.config.api}/models`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const data = await response.json(); 
+    return data.data;
+  }
   async createCompletion({ model, prompt, maxTokens, temperature }) {
     const url = `${this.config.api}/engines/${model}/completions`;
     const data = {
@@ -35,7 +45,8 @@ export class OpenAI {
     }
     return response.json();
   }
-  async createChatCompletion({ model, messages, stream = false }) {
+  async createChatCompletion({ model, messages, stream = false, ...options }) {
+    // https://platform.openai.com/docs/api-reference/introduction
     const response = await fetch(`${this.config.api}/chat/completions`, {
       method: 'POST',
       headers: this.headers,
@@ -43,6 +54,7 @@ export class OpenAI {
         model,
         stream,
         messages,
+        ...options,
       })
     });
 
