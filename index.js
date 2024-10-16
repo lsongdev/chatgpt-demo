@@ -52,6 +52,7 @@ async function handleSend() {
     await appendMessage('system', systemInput.value);
   }
   const userContent = userInput.value.trim();
+  userInput.value = '';
   if (!userContent) return;  // Prevent empty messages
 
   await appendMessage('user', userContent);
@@ -59,23 +60,30 @@ async function handleSend() {
   const selectedModel = modelsSelect.value;
   const [selectedProvider, model] = selectedModel.split(':');
   const temperature = parseFloat(temperatureInput.value) || 1.0;
-  const configuration = new Configuration({
-    api: providers[selectedProvider].api,
-    apiKey: providers[selectedProvider].apiKey,
-  });
-  const openai = new OpenAI(configuration);
-  const response = await openai.createChatCompletion({
-    model,
-    messages: history,
-    temperature,
-    stream: true,
-  });
-  const assistantMessage = await appendMessage('assistant', '');
-  for await (const chunk of response) {
-    const content = chunk.choices[0]?.delta?.content || '';
-    assistantMessage.innerHTML = parse(history[history.length - 1].content += content);
+  try {
+    const configuration = new Configuration({
+      api: providers[selectedProvider].api,
+      apiKey: providers[selectedProvider].apiKey,
+    });
+    const openai = new OpenAI(configuration);
+    const response = await openai.createChatCompletion({
+      model,
+      messages: history,
+      temperature,
+      stream: true,
+    });
+    const assistantMessage = await appendMessage('assistant', '');
+    for await (const chunk of response) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      assistantMessage.innerHTML = parse(history[history.length - 1].content += content);
+    }
+  } catch (err) {
+    console.error(err);
+    const messageElement = createMessageElement('system', err.message);
+    messageList.appendChild(messageElement);
+    history.pop(); // revert the user content to input element
+    userInput.value = userContent;
   }
-  userInput.value = '';
   userInput.focus();
 }
 
@@ -112,7 +120,7 @@ const populateRoles = async () => {
       return
     }
     clearHistory();
-    history.push({ role: 'system', content: role.prompt_start });
+    history.push({ role: 'system', content: role.prompt });
     appendMessage('assistant', role.welcome_message);
   });
 };

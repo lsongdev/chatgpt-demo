@@ -59,7 +59,8 @@ export class OpenAI {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      const { error } = await response.json();
+      throw error;
     }
 
     if (!stream) return response.json();
