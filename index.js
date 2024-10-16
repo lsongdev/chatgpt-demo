@@ -112,8 +112,7 @@ const populateRoles = async () => {
       return
     }
     clearHistory();
-    systemInput.value = role.prompt_start;
-    appendMessage('system', role.prompt_start);
+    history.push({ role: 'system', content: role.prompt_start });
     appendMessage('assistant', role.welcome_message);
   });
 };
