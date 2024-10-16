@@ -58,7 +58,7 @@ async function handleSend() {
 
   const selectedModel = modelsSelect.value;
   const [selectedProvider, model] = selectedModel.split(':');
-  const temperature = temperatureInput.value;
+  const temperature = parseFloat(temperatureInput.value) || 1.0;
   const configuration = new Configuration({
     api: providers[selectedProvider].api,
     apiKey: providers[selectedProvider].apiKey,
