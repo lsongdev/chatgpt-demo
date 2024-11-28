@@ -27,12 +27,6 @@ const apiKeys = [
 ];
 
 const providers = {
-  openrouter: {
-    name: 'OpenRouter',
-    api: 'https://openrouter.ai/api/v1',
-    apiKey: 'sk-or-v1-' + sample(apiKeys, 1),
-
-  },
   azure: {
     name: 'Azure OpenAI',
     api: 'https://oai.lsong.org/v1',
@@ -43,11 +37,17 @@ const providers = {
     api: 'https://ollama.lsong.org/v1',
     apiKey: '',
   },
-  openai: {
-    name: 'OpenAI',
-    api: 'https://api.openai.com/v1',
-    apiKey: 'sk-proj-' + 'ZVrIQAmhA-d5OZPgSlABepKV5zgcR6rRR0A2vKnO8O76X1nZpQD2YIWfUXxRYOECIiWGXTPZEvT3BlbkFJVw-SkbV23QJwwYNcZU3-qjUlirtO5SLSVTHvsKCZyOZCdJ9IOhJsnhS8hfHdYkAxRRnAB27i0A'
+  openrouter: {
+    name: 'OpenRouter',
+    api: 'https://openrouter.ai/api/v1',
+    apiKey: 'sk-or-v1-' + sample(apiKeys, 1),
+
   },
+  // openai: {
+  //   name: 'OpenAI',
+  //   api: 'https://openai.lsong.org/v1',
+  //   apiKey: 'sk-proj-' + 'ZVrIQAmhA-d5OZPgSlABepKV5zgcR6rRR0A2vKnO8O76X1nZpQD2YIWfUXxRYOECIiWGXTPZEvT3BlbkFJVw-SkbV23QJwwYNcZU3-qjUlirtO5SLSVTHvsKCZyOZCdJ9IOhJsnhS8hfHdYkAxRRnAB27i0A'
+  // },
 };
 
 console.log('providers', providers);
