@@ -32,16 +32,16 @@ const providers = {
     api: 'https://oai.lsong.org/v1',
     apiKey: ('c97f2b499aeb46eb' + 'be29aef5a2052906'),
   },
-  ollama: {
-    name: 'Ollama',
-    api: 'https://ollama.lsong.org/v1',
-    apiKey: '',
-  },
   openrouter: {
     name: 'OpenRouter',
     api: 'https://openrouter.ai/api/v1',
     apiKey: 'sk-or-v1-' + sample(apiKeys, 1),
 
+  },
+  ollama: {
+    name: 'Ollama',
+    api: 'https://ollama.lsong.org/v1',
+    apiKey: '',
   },
   // openai: {
   //   name: 'OpenAI',
