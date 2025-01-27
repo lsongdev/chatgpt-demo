@@ -88,7 +88,7 @@ async function handleSend() {
   await appendMessage('user', userContent);
 
   const selectedModel = modelsSelect.value;
-  const [selectedProvider, model] = selectedModel.split(':');
+  const [selectedProvider, model] = selectedModel.split('@');
   const temperature = parseFloat(temperatureInput.value) || 1.0;
   try {
     const configuration = new Configuration({
@@ -131,7 +131,7 @@ async function populateModels() {
     console.log(selected);
     models.forEach(model => {
       const option = document.createElement('option');
-      option.value = `${provider}:${model.id}`;
+      option.value = `${provider}@${model.id}`;
       option.textContent = `${providers[provider].name} - ${model.id}`;
       option.selected = selected == option.value;
       modelsSelect.appendChild(option);
