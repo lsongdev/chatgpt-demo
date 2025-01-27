@@ -5,6 +5,7 @@ import { sample } from 'https://lsong.org/scripts/array.js';
 import { OpenAI, Configuration } from './openai.js';
 
 const {
+  model = "openrouter@openai/gpt-3.5-turbo",
   user = '',
   system = '',
   assistant = '',
@@ -127,7 +128,7 @@ async function populateModels() {
       apiKey: providers[provider].apiKey,
     })
     const models = await openai.getModels();
-    const selected = modelsSelect.getAttribute('selected');
+    const selected = model; // modelsSelect.getAttribute('selected');
     console.log(selected);
     models.forEach(model => {
       const option = document.createElement('option');
