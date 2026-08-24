@@ -1,7 +1,7 @@
 import { ready } from 'https://lsong.org/scripts/dom/index.js';
-import { query } from 'https://lsong.org/scripts/query.js';
-import { parse } from 'https://lsong.org/scripts/marked.js';
-import { sample } from 'https://lsong.org/scripts/array.js';
+import { query } from 'https://lsong.org/scripts/navigation/query.js';
+import { parse } from 'https://lsong.org/scripts/text/markdown.js';
+import { sample } from 'https://lsong.org/scripts/array/random.js';
 import { OpenAI, Configuration } from './openai.js';
 
 const {
