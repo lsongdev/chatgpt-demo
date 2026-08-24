@@ -1,4 +1,4 @@
-import { readLines } from 'https://lsong.org/scripts/streams/text.js';
+import { readLines } from 'https://lsong.org/scripts/streams/index.js?v2';
 
 export class Configuration {
   constructor(config) {
