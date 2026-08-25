@@ -1,4 +1,4 @@
-import { readLines } from 'https://lsong.org/scripts/streams/index.js?v2';
+import { readLines } from 'https://lsong.org/scripts/streams/index.js';
 
 export class Configuration {
   constructor(config) {
@@ -67,9 +67,8 @@ export class OpenAI {
 
     if (!stream) return response.json();
 
-    const reader = response.body.getReader();
-    async function* parseOpenAILines(reader) {
-      for await (let line of readLines(reader)) {
+    async function* parseOpenAILines(stream) {
+      for await (let line of readLines(stream)) {
         const colmanIndex = line.indexOf(':');
         if (colmanIndex === -1) continue;
         const key = line.slice(0, colmanIndex);
@@ -79,6 +78,6 @@ export class OpenAI {
         yield JSON.parse(line);
       }
     }
-    return parseOpenAILines(reader);
+    return parseOpenAILines(response.body);
   }
 }
