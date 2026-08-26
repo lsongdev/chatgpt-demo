@@ -1,13 +1,4 @@
 @import url(https://lsong.org/css/stylesheet.css);
-@import url(https://lsong.org/stylesheets/util.css);
-@import url(https://lsong.org/stylesheets/flex.css);
-@import url(https://lsong.org/stylesheets/form.css);
-@import url(https://lsong.org/stylesheets/button.css);
-
-.select {
-  --border-radius: 4px;
-  padding: var(--input-padding);
-}
 
 #app {
   gap: 10px;

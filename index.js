@@ -5,27 +5,27 @@ import { sample } from 'https://lsong.org/scripts/array/random.js';
 import { OpenAI, Configuration } from './openai.js';
 
 const {
-  model = "openrouter@openai/gpt-3.5-turbo",
+  model = "free",
   user = '',
   system = '',
   assistant = '',
 } = query;
 
-const apiKeys = [
-  "086290c607e5420a5912536d219ced1f2b84327a94ca6ce0156983a5e11dee7f",
-  "108d029e3b985ca7f1ded346cfc5474c8f73efaf18509699fbba951395a26307",
-  "29382dc2ebd951d9ecaa425dcc746c3c5669e9a808461027f2f76c8a6dbc9ea9",
-  "4227981450052530c0edf6418ce5596aa66ea93a3605d480366970c6111ea537",
-  "5b588423b57a937c0aa6db21b5434634ed55ff3c7f51c528297e8d1f0a7b8dad",
-  "63b40bfa60cf41afea3d6890a57df75d735f1a99fd7f4c02561cf1f6389901c9",
-  "65fc4e4ac25c261d541938a01e5c981b1bcea9bda7f0dadd83e87c450153e2ea",
-  "6d7fdc964cd7acb611747e995e4b965bdd662a90e3d165a64233f77eaadfc13d",
-  "758e0717572c6edc458d2c0c79f210f6686e5e8faf414682c978888ea12c14bc",
-  "7cb98894020c65079d0d0dc3f72142ac6b89e45c5a969cd086b1b3c40c94929a",
-  "a8488b678076d25f2df9bc914d3121680cc334f07518b925d270660348024574",
-  "b8be14c1f7135f45e18e1ee378beb65f7191c37831c97a46fe6d0cded46c5aa7",
-  "d5bce776f8db8f28270eebf252ee5647e67634c8c29ff8cdac73cc2b15794b8b",
-];
+// const apiKeys = [
+//   "086290c607e5420a5912536d219ced1f2b84327a94ca6ce0156983a5e11dee7f",
+//   "108d029e3b985ca7f1ded346cfc5474c8f73efaf18509699fbba951395a26307",
+//   "29382dc2ebd951d9ecaa425dcc746c3c5669e9a808461027f2f76c8a6dbc9ea9",
+//   "4227981450052530c0edf6418ce5596aa66ea93a3605d480366970c6111ea537",
+//   "5b588423b57a937c0aa6db21b5434634ed55ff3c7f51c528297e8d1f0a7b8dad",
+//   "63b40bfa60cf41afea3d6890a57df75d735f1a99fd7f4c02561cf1f6389901c9",
+//   "65fc4e4ac25c261d541938a01e5c981b1bcea9bda7f0dadd83e87c450153e2ea",
+//   "6d7fdc964cd7acb611747e995e4b965bdd662a90e3d165a64233f77eaadfc13d",
+//   "758e0717572c6edc458d2c0c79f210f6686e5e8faf414682c978888ea12c14bc",
+//   "7cb98894020c65079d0d0dc3f72142ac6b89e45c5a969cd086b1b3c40c94929a",
+//   "a8488b678076d25f2df9bc914d3121680cc334f07518b925d270660348024574",
+//   "b8be14c1f7135f45e18e1ee378beb65f7191c37831c97a46fe6d0cded46c5aa7",
+//   "d5bce776f8db8f28270eebf252ee5647e67634c8c29ff8cdac73cc2b15794b8b",
+// ];
 
 const providers = {
   // azure: {
@@ -38,16 +38,16 @@ const providers = {
   //   api: 'https://openrouter.ai/api/v1',
   //   apiKey: 'sk-or-v1-' + sample(apiKeys, 1),
   // },
-  ollama: {
-    name: 'Ollama',
-    api: 'https://ollama.lsong.org/v1',
-    apiKey: '',
-  },
-  // openai: {
-  //   name: 'OpenAI',
-  //   api: 'https://openai.lsong.org/v1',
-  //   apiKey: 'sk-proj-' + 'ZVrIQAmhA-d5OZPgSlABepKV5zgcR6rRR0A2vKnO8O76X1nZpQD2YIWfUXxRYOECIiWGXTPZEvT3BlbkFJVw-SkbV23QJwwYNcZU3-qjUlirtO5SLSVTHvsKCZyOZCdJ9IOhJsnhS8hfHdYkAxRRnAB27i0A'
+  // ollama: {
+  //   name: 'Ollama',
+  //   api: 'https://ollama.lsong.org/v1',
+  //   apiKey: '',
   // },
+  openai: {
+    name: 'OpenAI',
+    api: 'https://models.lsong.org/v1',
+    apiKey: 'sk-lsong_ZxiqPUPGNDcqNZjNfG7n-GzWVqyZ6r8x2xtR-RzG5ds'
+  },
 };
 
 console.log('providers', providers);
