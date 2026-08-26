@@ -19,17 +19,19 @@ export class OpenAI {
     };
   }
 
-  async getModels() {
+  async getModels({ signal } = {}) {
     const response = await fetch(`${this.config.api}/models`, {
       headers: this.headers,
+      signal,
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      throw await this.#parseError(response);
     }
-    const data = await response.json(); 
+    const data = await response.json();
     return data.data;
   }
-  async createCompletion({ model, prompt, maxTokens, temperature }) {
+
+  async createCompletion({ model, prompt, maxTokens, temperature, signal }) {
     const url = `${this.config.api}/engines/${model}/completions`;
     const data = {
       prompt: prompt,
@@ -39,14 +41,16 @@ export class OpenAI {
     const response = await fetch(url, {
       method: 'POST',
       headers: this.headers,
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+      signal,
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      throw await this.#parseError(response);
     }
     return response.json();
   }
+
   async createChatCompletion({ model, messages, stream = false, ...options }) {
     // https://platform.openai.com/docs/api-reference/introduction
     const response = await fetch(`${this.config.api}/chat/completions`, {
@@ -61,23 +65,32 @@ export class OpenAI {
     });
 
     if (!response.ok) {
-      const { error } = await response.json();
-      throw error;
+      throw await this.#parseError(response);
     }
 
     if (!stream) return response.json();
 
     async function* parseOpenAILines(stream) {
       for await (let line of readLines(stream)) {
-        const colmanIndex = line.indexOf(':');
-        if (colmanIndex === -1) continue;
-        const key = line.slice(0, colmanIndex);
+        const colonIndex = line.indexOf(':');
+        if (colonIndex === -1) continue;
+        const key = line.slice(0, colonIndex);
         if (key !== 'data') continue;
-        line = line.slice(colmanIndex + 1).trim();
+        line = line.slice(colonIndex + 1).trim();
         if (line === '[DONE]') return;
         yield JSON.parse(line);
       }
     }
     return parseOpenAILines(response.body);
+  }
+
+  async #parseError(response) {
+    const message = `HTTP error! Status: ${response.status}`;
+    try {
+      const data = await response.json();
+      return new Error(data.error?.message || data.message || message);
+    } catch {
+      return new Error(message);
+    }
   }
 }
