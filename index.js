@@ -1,205 +1,316 @@
-import { ready } from 'https://lsong.org/scripts/dom/index.js';
-import { query } from 'https://lsong.org/scripts/navigation/query.js';
-import { parse } from 'https://lsong.org/scripts/text/markdown.js';
-import { sample } from 'https://lsong.org/scripts/array/random.js';
-import { OpenAI, Configuration } from './openai.js';
+import { h, render } from 'https://esm.sh/preact@10.27.2';
+import { useEffect, useRef, useState } from 'https://esm.sh/preact@10.27.2/hooks';
+import htm from 'https://esm.sh/htm@3.1.1';
+import { OpenAI } from './openai.js';
+import { createConversation, loadState, saveState, uid } from './store.js';
 
-const {
-  model = "free",
-  user = '',
-  system = '',
-  assistant = '',
-} = query;
+const html = htm.bind(h);
 
-// const apiKeys = [
-//   "086290c607e5420a5912536d219ced1f2b84327a94ca6ce0156983a5e11dee7f",
-//   "108d029e3b985ca7f1ded346cfc5474c8f73efaf18509699fbba951395a26307",
-//   "29382dc2ebd951d9ecaa425dcc746c3c5669e9a808461027f2f76c8a6dbc9ea9",
-//   "4227981450052530c0edf6418ce5596aa66ea93a3605d480366970c6111ea537",
-//   "5b588423b57a937c0aa6db21b5434634ed55ff3c7f51c528297e8d1f0a7b8dad",
-//   "63b40bfa60cf41afea3d6890a57df75d735f1a99fd7f4c02561cf1f6389901c9",
-//   "65fc4e4ac25c261d541938a01e5c981b1bcea9bda7f0dadd83e87c450153e2ea",
-//   "6d7fdc964cd7acb611747e995e4b965bdd662a90e3d165a64233f77eaadfc13d",
-//   "758e0717572c6edc458d2c0c79f210f6686e5e8faf414682c978888ea12c14bc",
-//   "7cb98894020c65079d0d0dc3f72142ac6b89e45c5a969cd086b1b3c40c94929a",
-//   "a8488b678076d25f2df9bc914d3121680cc334f07518b925d270660348024574",
-//   "b8be14c1f7135f45e18e1ee378beb65f7191c37831c97a46fe6d0cded46c5aa7",
-//   "d5bce776f8db8f28270eebf252ee5647e67634c8c29ff8cdac73cc2b15794b8b",
-// ];
-
-const providers = {
-  // azure: {
-  //   name: 'Azure OpenAI',
-  //   api: 'https://oai.lsong.org/v1',
-  //   apiKey: ('c97f2b499aeb46eb' + 'be29aef5a2052906'),
-  // },
-  // openrouter: {
-  //   name: 'OpenRouter',
-  //   api: 'https://openrouter.ai/api/v1',
-  //   apiKey: 'sk-or-v1-' + sample(apiKeys, 1),
-  // },
-  // ollama: {
-  //   name: 'Ollama',
-  //   api: 'https://ollama.lsong.org/v1',
-  //   apiKey: '',
-  // },
-  openai: {
-    name: 'OpenAI',
-    api: 'https://models.lsong.org/v1',
-    apiKey: 'sk-lsong_ZxiqPUPGNDcqNZjNfG7n-GzWVqyZ6r8x2xtR-RzG5ds'
-  },
-};
-
-console.log('providers', providers);
-
-const history = [];
-
-// DOM Elements
-let form, systemInput, userInput, messageList, modelsSelect, temperatureInput, rolesSelect;
-
-// Helper Functions
-function createMessageElement(role, content) {
-  const messageElement = document.createElement('li');
-  messageElement.className = `message-role-${role}`;
-  messageElement.innerHTML = parse(content);
-  return messageElement;
+function route() {
+  const hash = location.hash || '#/';
+  if (hash === '#/settings') return { page: 'settings' };
+  const match = hash.match(/^#\/chat\/([^/]+)$/);
+  return match ? { page: 'chat', id: match[1] } : { page: 'home' };
 }
 
-async function appendMessage(role, content) {
-  const messageElement = createMessageElement(role, content);
-  messageList.appendChild(messageElement);
-  history.push({ role, content });
-  return messageElement;
-};
+const titleFrom = text => text.trim().replace(/\s+/g, ' ').slice(0, 48) || 'New chat';
 
-const clearHistory = () => {
-  history.length = 0;
-  messageList.innerHTML = '';
-};
+function App() {
+  const [state, setState] = useState(loadState);
+  const [locationState, setLocationState] = useState(route);
 
-async function handleSend() {
-  if (history.length === 0 && systemInput.value) {
-    await appendMessage('system', systemInput.value);
-  }
-  const userContent = userInput.value.trim();
-  userInput.value = '';
-  if (!userContent) return;  // Prevent empty messages
+  useEffect(() => {
+    const onHash = () => setLocationState(route());
+    addEventListener('hashchange', onHash);
+    return () => removeEventListener('hashchange', onHash);
+  }, []);
 
-  await appendMessage('user', userContent);
+  useEffect(() => saveState(state), [state]);
 
-  const selectedModel = modelsSelect.value;
-  const [selectedProvider, model] = selectedModel.split('@');
-  const temperature = parseFloat(temperatureInput.value) || 1.0;
-  try {
-    const configuration = new Configuration({
-      api: providers[selectedProvider].api,
-      apiKey: providers[selectedProvider].apiKey,
+  useEffect(() => {
+    if (locationState.page !== 'home') return;
+    const first = [...state.conversations].sort((a, b) => b.updatedAt - a.updatedAt)[0];
+    if (first) location.hash = `#/chat/${first.id}`;
+    else {
+      const conversation = createConversation(state.profiles[0]?.id || '');
+      setState(value => ({ ...value, conversations: [conversation] }));
+      location.hash = `#/chat/${conversation.id}`;
+    }
+  }, [locationState.page]);
+
+  const createChat = () => {
+    const conversation = createConversation(state.profiles[0]?.id || '');
+    setState(value => ({ ...value, conversations: [conversation, ...value.conversations] }));
+    location.hash = `#/chat/${conversation.id}`;
+  };
+
+  const removeChat = id => {
+    setState(value => ({ ...value, conversations: value.conversations.filter(item => item.id !== id) }));
+    location.hash = '#/';
+  };
+
+  const updateConversation = (id, patch) => setState(value => ({
+    ...value,
+    conversations: value.conversations.map(item => item.id === id ? { ...item, ...patch, updatedAt: Date.now() } : item),
+  }));
+
+  const chats = [...state.conversations].sort((a, b) => b.updatedAt - a.updatedAt);
+  const current = locationState.page === 'chat' ? state.conversations.find(item => item.id === locationState.id) : null;
+
+  useEffect(() => {
+    if (locationState.page === 'chat' && !current) location.hash = '#/';
+  }, [locationState.page, locationState.id, state.conversations.length]);
+
+  return html`
+    <div class="app">
+      <aside class="sidebar">
+        <div class="toolbar">
+          <strong>ChatGPT Demo</strong>
+          <button type="button" onClick=${createChat}>New</button>
+        </div>
+        <nav aria-label="Conversations">
+          ${chats.map(chat => html`
+            <a href=${`#/chat/${chat.id}`} aria-current=${current?.id === chat.id ? 'page' : undefined}>${chat.title}</a>
+          `)}
+          <hr />
+          <a href="#/settings" aria-current=${locationState.page === 'settings' ? 'page' : undefined}>Settings</a>
+        </nav>
+      </aside>
+      <main>
+        ${locationState.page === 'settings'
+          ? html`<${Settings} state=${state} setState=${setState} />`
+          : current
+            ? html`<${Chat} conversation=${current} profiles=${state.profiles} mcpServers=${state.mcpServers} update=${updateConversation} remove=${removeChat} />`
+            : html`<p>Loading…</p>`}
+      </main>
+    </div>
+  `;
+}
+
+function Chat({ conversation, profiles, mcpServers, update, remove }) {
+  const [draft, setDraft] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState('');
+  const abortRef = useRef();
+  const profile = profiles.find(item => item.id === conversation.profileId) || profiles[0];
+  const model = conversation.model || profile?.model || '';
+
+  useEffect(() => {
+    if (!conversation.profileId && profile) update(conversation.id, { profileId: profile.id });
+  }, [conversation.id, conversation.profileId, profile?.id]);
+
+  const send = async event => {
+    event.preventDefault();
+    const content = draft.trim();
+    if (!content || busy || !profile) return;
+    if (!model) {
+      location.hash = '#/settings';
+      return;
+    }
+
+    const userMessage = { id: uid(), role: 'user', content };
+    const assistantMessage = { id: uid(), role: 'assistant', content: '' };
+    const existing = conversation.messages;
+    const messages = [...existing, userMessage, assistantMessage];
+    setDraft('');
+    setBusy(true);
+    setStatus('Thinking…');
+    update(conversation.id, {
+      title: existing.length ? conversation.title : titleFrom(content),
+      messages,
     });
-    const openai = new OpenAI(configuration);
-    const response = await openai.createChatCompletion({
-      model,
-      messages: history,
-      temperature,
-      stream: true,
-    });
-    const assistantMessage = await appendMessage('assistant', '');
-    const thinkElement = document.createElement("detail");
-    thinkElement.innerHTML = `<summary>thinking ...</summary>`;
-    for await (const chunk of response) {
-      if (chunk.error && chunk.error.code != 0) {
-        throw new Error(chunk.error.message);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      const client = new OpenAI(profile);
+      await client.chat({
+        model,
+        system: conversation.system,
+        messages: [...existing, userMessage].map(({ role, content }) => ({ role, content })),
+        mcpServers,
+        signal: controller.signal,
+        onDelta: (_delta, full) => {
+          update(conversation.id, {
+            messages: [...existing, userMessage, { ...assistantMessage, content: full }],
+          });
+        },
+        onStatus: setStatus,
+        approve: request => Promise.resolve(confirm(
+          `${request.server_label || 'MCP'} wants to call ${request.name || 'a tool'}:\n\n${request.arguments || ''}\n\nAllow this call?`
+        )),
+      });
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        update(conversation.id, {
+          messages: [...existing, userMessage, { ...assistantMessage, content: `Error: ${error.message}` }],
+        });
       }
-      const content = chunk.choices[0]?.delta?.content || '';
-      const full_content = history[history.length - 1].content += content;
-      assistantMessage.innerHTML = parse(
-        full_content
-          .replace("<think>", "<details><summary>thinking ...</summary>")
-          .replace("</think>", "</details>")
-      );
+    } finally {
+      abortRef.current = null;
+      setBusy(false);
+      setStatus('');
     }
-  } catch (err) {
-    console.error(err);
-    const messageElement = createMessageElement('system', err.message);
-    messageList.appendChild(messageElement);
-    history.pop(); // revert the user content to input element
-    userInput.value = userContent;
-  }
-  userInput.focus();
+  };
+
+  if (!profile) return html`<p>No API profile configured. <a href="#/settings">Open Settings</a>.</p>`;
+
+  return html`
+    <section>
+      <div class="toolbar">
+        <h1>${conversation.title}</h1>
+        <button class="danger" type="button" onClick=${() => confirm('Delete this conversation?') && remove(conversation.id)}>Delete</button>
+      </div>
+
+      <div class="row">
+        <label class="grow">API
+          <select value=${profile.id} onChange=${event => update(conversation.id, { profileId: event.currentTarget.value, model: '' })}>
+            ${profiles.map(item => html`<option value=${item.id}>${item.name}</option>`)}
+          </select>
+        </label>
+        <label class="grow">Model
+          <input type="text" value=${model} placeholder="Configure a model in Settings" onInput=${event => update(conversation.id, { model: event.currentTarget.value })} />
+        </label>
+      </div>
+
+      <details>
+        <summary>System prompt</summary>
+        <textarea value=${conversation.system} placeholder="Optional instructions for this conversation" onInput=${event => update(conversation.id, { system: event.currentTarget.value })}></textarea>
+      </details>
+
+      <ol class="messages">
+        ${conversation.messages.map(message => html`
+          <li class=${`message message-${message.role}`} key=${message.id}>
+            <header>${message.role === 'user' ? 'You' : message.role === 'assistant' ? 'Assistant' : message.role}</header>
+            <div class="message-content">${message.content}</div>
+          </li>
+        `)}
+      </ol>
+
+      ${status && html`<p class="muted">${status}</p>`}
+      <form onSubmit=${send}>
+        <textarea autofocus value=${draft} placeholder="Send a message…" onInput=${event => setDraft(event.currentTarget.value)} onKeyDown=${event => {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            event.currentTarget.form?.requestSubmit();
+          }
+        }}></textarea>
+        <div class="toolbar">
+          <small>${profile.mode === 'responses' ? 'Responses API' : 'Chat Completions'} · ${profile.api}</small>
+          ${busy
+            ? html`<button type="button" onClick=${() => abortRef.current?.abort()}>Stop</button>`
+            : html`<button type="submit">Send</button>`}
+        </div>
+      </form>
+    </section>
+  `;
 }
 
-async function populateModels() {
-  for (const provider of Object.keys(providers)) {
-    const openai = new OpenAI({
-      api: providers[provider].api,
-      apiKey: providers[provider].apiKey,
-    })
-    const models = await openai.getModels();
-    const selected = model; // modelsSelect.getAttribute('selected');
-    console.log(selected);
-    models.forEach(model => {
-      const option = document.createElement('option');
-      option.value = `${provider}@${model.id}`;
-      option.textContent = `${providers[provider].name} - ${model.id}`;
-      option.selected = selected == option.value;
-      modelsSelect.appendChild(option);
-    });
-  }
-}
+function Settings({ state, setState }) {
+  const [models, setModels] = useState({});
+  const [error, setError] = useState('');
 
-const populateRoles = async () => {
-  const response = await fetch('./prompts.json');
-  const roles = await response.json();
-  for (const role of roles) {
-    const option = document.createElement('option');
-    option.value = role.id;
-    option.textContent = role.name;
-    rolesSelect.appendChild(option);
-  }
-  rolesSelect.addEventListener('change', () => {
-    const role = roles.find(r => r.id === rolesSelect.value);
-    if (!role) {
-      systemInput.value = '';
-      return
-    }
-    clearHistory();
-    history.push({ role: 'system', content: role.prompt });
-    appendMessage('assistant', role.welcome_message);
-  });
-};
+  const updateProfile = (id, patch) => setState(value => ({
+    ...value,
+    profiles: value.profiles.map(item => item.id === id ? { ...item, ...patch } : item),
+  }));
 
-async function initializeChat() {
-  await populateModels();
-  await populateRoles();
-  if (system) {
-    systemInput.value = system;
-    await appendMessage('system', system);
-  }
-  if (assistant) {
-    await appendMessage('assistant', assistant);
-  }
-  if (user) {
-    userInput.value = user;
-    await handleSend();
-  }
-}
+  const addProfile = () => setState(value => ({
+    ...value,
+    profiles: [...value.profiles, { id: uid(), name: 'API', api: '', apiKey: '', mode: 'chat', model: '' }],
+  }));
 
-// Main Function
-ready(async () => {
-  // Initialize DOM elements
-  form = document.getElementById('form');
-  systemInput = document.getElementById('system');
-  userInput = document.getElementById('user');
-  messageList = document.getElementById('messages');
-  modelsSelect = document.getElementById('models');
-  temperatureInput = document.getElementById('temperature');
-  rolesSelect = document.getElementById('roles');
-
-  // Set up event listeners
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    await handleSend();
+  const removeProfile = id => setState(value => {
+    if (value.profiles.length === 1) return value;
+    const profiles = value.profiles.filter(item => item.id !== id);
+    const fallback = profiles[0]?.id || '';
+    return {
+      ...value,
+      profiles,
+      conversations: value.conversations.map(chat => chat.profileId === id ? { ...chat, profileId: fallback, model: '' } : chat),
+    };
   });
 
-  // Initialize chat
-  await initializeChat();
-});
+  const loadModels = async profile => {
+    setError('');
+    try {
+      const data = await new OpenAI(profile).getModels();
+      setModels(value => ({ ...value, [profile.id]: data.map(item => item.id || item.name || item).filter(Boolean) }));
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const updateMcp = (id, patch) => setState(value => ({
+    ...value,
+    mcpServers: value.mcpServers.map(item => item.id === id ? { ...item, ...patch } : item),
+  }));
+
+  const addMcp = () => setState(value => ({
+    ...value,
+    mcpServers: [...value.mcpServers, { id: uid(), name: 'MCP', url: '', authorization: '', approval: 'always', enabled: true }],
+  }));
+
+  return html`
+    <section class="stack">
+      <div class="toolbar">
+        <h1>Settings</h1>
+        <a href="#/">Back to chat</a>
+      </div>
+      <p class="muted">Configuration is stored only in this browser's localStorage. API and MCP servers must accept browser requests; do not use secrets here on a shared or untrusted device.</p>
+      ${error && html`<p class="danger">${error}</p>`}
+
+      <h2>API profiles</h2>
+      ${state.profiles.map(profile => html`
+        <fieldset key=${profile.id}>
+          <legend>${profile.name || 'API'}</legend>
+          <div class="stack">
+            <label>Name <input type="text" value=${profile.name} onInput=${event => updateProfile(profile.id, { name: event.currentTarget.value })} /></label>
+            <label>API base URL <input type="url" value=${profile.api} placeholder="https://api.openai.com/v1" onInput=${event => updateProfile(profile.id, { api: event.currentTarget.value })} /></label>
+            <label>Secret <input type="password" value=${profile.apiKey} autocomplete="off" placeholder="Optional for local APIs" onInput=${event => updateProfile(profile.id, { apiKey: event.currentTarget.value })} /></label>
+            <label>API mode
+              <select value=${profile.mode} onChange=${event => updateProfile(profile.id, { mode: event.currentTarget.value })}>
+                <option value="responses">Responses API (supports remote MCP)</option>
+                <option value="chat">Chat Completions (widest compatibility)</option>
+              </select>
+            </label>
+            <label>Default model
+              <input list=${`models-${profile.id}`} type="text" value=${profile.model} placeholder="Model id" onInput=${event => updateProfile(profile.id, { model: event.currentTarget.value })} />
+              <datalist id=${`models-${profile.id}`}>${(models[profile.id] || []).map(model => html`<option value=${model} />`)}</datalist>
+            </label>
+            <div class="row">
+              <button type="button" onClick=${() => loadModels(profile)}>Load models</button>
+              ${state.profiles.length > 1 && html`<button class="danger" type="button" onClick=${() => removeProfile(profile.id)}>Remove</button>`}
+            </div>
+          </div>
+        </fieldset>
+      `)}
+      <button type="button" onClick=${addProfile}>Add API profile</button>
+
+      <h2>Remote MCP</h2>
+      <p class="muted">MCP is enabled only for profiles using the Responses API. Approval is requested before each tool call by default.</p>
+      ${state.mcpServers.map(server => html`
+        <fieldset key=${server.id}>
+          <legend>${server.name || 'MCP'}</legend>
+          <div class="stack">
+            <label class="inline"><input type="checkbox" checked=${server.enabled !== false} onChange=${event => updateMcp(server.id, { enabled: event.currentTarget.checked })} /> Enabled</label>
+            <label>Name <input type="text" value=${server.name} onInput=${event => updateMcp(server.id, { name: event.currentTarget.value })} /></label>
+            <label>Server URL <input type="url" value=${server.url} placeholder="https://example.com/mcp" onInput=${event => updateMcp(server.id, { url: event.currentTarget.value })} /></label>
+            <label>Authorization <input type="password" value=${server.authorization} autocomplete="off" placeholder="Optional OAuth/access token" onInput=${event => updateMcp(server.id, { authorization: event.currentTarget.value })} /></label>
+            <label>Tool approval
+              <select value=${server.approval || 'always'} onChange=${event => updateMcp(server.id, { approval: event.currentTarget.value })}>
+                <option value="always">Ask every time</option>
+                <option value="never">Auto approve</option>
+              </select>
+            </label>
+            <button class="danger" type="button" onClick=${() => setState(value => ({ ...value, mcpServers: value.mcpServers.filter(item => item.id !== server.id) }))}>Remove MCP</button>
+          </div>
+        </fieldset>
+      `)}
+      <button type="button" onClick=${addMcp}>Add MCP server</button>
+    </section>
+  `;
+}
+
+render(html`<${App} />`, document.getElementById('app'));

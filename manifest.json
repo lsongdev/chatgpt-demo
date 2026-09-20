@@ -1,30 +1,14 @@
 {
-  "name": "Light Speed",
-  "short_name": "⚡️",
-  "description": "ChatGPT Demo",
-  "id": "?id=chatgpt",
+  "name": "ChatGPT Demo",
+  "short_name": "ChatGPT",
+  "description": "A small browser-native OpenAI compatible chat client.",
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000",
-  "background_color": "#efefef",
-  "display_override": [
-    "window-controls-overlay"
-  ],
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
   "icons": [
-    {
-      "src": "icon-x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon-x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    }
+    { "src": "icon-x128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "icon-x512.png", "sizes": "512x512", "type": "image/png" }
   ],
-  "categories": [
-    "education"
-  ]
+  "categories": ["productivity"]
 }

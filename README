@@ -1,2 +1,25 @@
 ChatGPT Demo
-https://lsong.org/chatgpt-demo
+============
+
+A tiny browser-native chat client built with Preact + HTM + ESM and no build step.
+
+Features
+--------
+
+- Multiple local conversations
+- Multiple OpenAI-compatible API profiles
+- Responses API and Chat Completions support
+- Remote MCP servers through the Responses API, including per-call approval
+- Local-only persistence with localStorage
+
+Run
+---
+
+    python3 -m http.server
+
+Then open http://localhost:8000 and configure an API profile in Settings.
+
+Security
+--------
+
+This is a pure frontend application. API keys and optional MCP authorization tokens are stored in the browser's localStorage and requests are made directly from the browser. Only use it on trusted devices and with endpoints that intentionally allow browser access.
